@@ -4,13 +4,15 @@ import type { DocNode } from "https://deno.land/x/deno_doc@0.125.0/types.d.ts";
 import { snakeCase } from "https://deno.land/x/case/mod.ts";
 
 const ANNOUNCEMENT_PARTS = [
-  '<small>&Proportion;&nbsp;&nbsp;',
-  '&nbsp;&nbsp;&Proportion;</small>',
+  '<span class="tool_announcement">',
+  '</span><span class="tool_announcement_end"></span>',
 ]
 const ANNOUNCEMENT_REGEX = new RegExp(`${ANNOUNCEMENT_PARTS[0]}(.*?)${ANNOUNCEMENT_PARTS[1]}`, 'gs');
 
 const toolFiles = [
-  './web.ts'
+  './web.ts',
+  './codesandbox.ts',
+  './execute-code.ts'
 ]
 
 const getJSDoc = file => doc(`file://${dir}/${file}`)
@@ -70,25 +72,20 @@ export async function getTools(shape = 'openai') {
 }
 
 async function getFunctions() {
-  return toolFiles.reduce(async (acc, file) => {
+  const functions = {}
+  for (const file of toolFiles) {
     const funcs = await import(file)
     for (const [name, func] of Object.entries(funcs)) {
       func.parameters = getParameterNames(func)
-      acc[snakeCase(name)] = func
+      functions[snakeCase(name)] = func
     }
-    return acc
-    // return Object.assign(acc, { ...funcs })
-  }, {})
+  }
+  return functions
 }
 
 async function getSchema(shape = 'openai') {
-  return toolFiles.reduce(async (acc, file) => ([
-    ...acc,
-    ...(await parseJSDoc(file, shape))
-  ]), [])
+  return (await Promise.all(toolFiles.map(file => parseJSDoc(file, shape)))).flat()
 }
-
-// console.log(await getTools());
 
 function getParameterNames(func) {
   const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
@@ -107,7 +104,7 @@ async function parseJSDoc(filePath: string, shape = 'openai') {
     const definitions = [];
     
     for (const node of docNodes) {
-      if (node.kind === "function") {
+      if (node.kind.includes(['function'])) {
         definitions.push(getFunctionSchema(node, shape))
       }
     }

@@ -8,9 +8,9 @@ const { tools, toolSchema } = await getTools('anthropic')
 export default class AnthropicProxy extends APIProxy {
   anthropic: Anthropic;
 
-  constructor(apiKey?: string) {
-    super(apiKey)
-    this.anthropic = new Anthropic({ apiKey })
+  constructor(options) {
+    super(options)
+    this.anthropic = new Anthropic({ apiKey: this.apiKey })
   }
 
   getClient() {
@@ -21,19 +21,23 @@ export default class AnthropicProxy extends APIProxy {
   }
 
   getCompletionStream(apiRequest) {
-    return apiCallStream(this.getClient(), apiRequest)
+    return apiCallStream(this.getClient(), { ...apiRequest, ...this.customRequestOptions })
   }
 
   getCompletion(apiRequest) {
-    return this.getClient().messages.create(apiRequest)
+    return this.getClient().messages.create({ ...apiRequest, ...this.customRequestOptions })
   }
 }
 
 async function* apiCallStream(anthropic, apiRequest) {
+  console.log({
+    ...apiRequest,
+    tools: toolSchema,
+    messages: removeAnnouncementsFromMessages(apiRequest.messages),
+  })
   const stream = await anthropic.messages.stream({
     ...apiRequest,
     tools: toolSchema,
-    model: 'claude-3-5-sonnet-20240620',
     messages: removeAnnouncementsFromMessages(apiRequest.messages),
   });
   let blocks = [];
@@ -104,9 +108,12 @@ async function* useTool(anthropic, apiRequest, blocks) {
       key => toolBlock.input[key]
     )
     if (tool.announce) {
-      yield* announceToolUse(tool.announce?.(...args) || '...', blocks.length)
+      yield* announceToolUse(tool.announce?.(...args), blocks.length)
     }
     const toolResult = await tool(...args)
+    if (tool.present) {
+      yield* announceToolUse(tool.present?.(toolResult, ...args), blocks.length + 1)
+    }
     yield* apiCallStream(
       anthropic,
       toolResultApiRequest(apiRequest, blocks, toolBlock.id, toolResult)

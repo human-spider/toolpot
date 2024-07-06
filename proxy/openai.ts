@@ -8,9 +8,9 @@ const { tools, toolSchema } = await getTools('openai');
 export default class OpenAIProxy extends APIProxy {
   openai: OpenAI;
 
-  constructor(apiKey?: string) {
-    super(apiKey)
-    this.openai = new OpenAI({ apiKey })
+  constructor(options) {
+    super(options)
+    this.openai = new OpenAI({ apiKey: this.apiKey })
   }
 
   getClient() {
@@ -21,11 +21,11 @@ export default class OpenAIProxy extends APIProxy {
   }
 
   getCompletionStream(apiRequest) {
-    return apiCallStream(this.getClient(), apiRequest)
+    return apiCallStream(this.getClient(), { ...apiRequest, ...this.customRequestOptions })
   }
 
   getCompletion(apiRequest) {
-    return this.getClient().chat.completions.create(apiRequest)
+    return this.getClient().chat.completions.create({ ...apiRequest, ...this.customRequestOptions })
   }
 }
 

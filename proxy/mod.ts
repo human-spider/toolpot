@@ -1,10 +1,12 @@
 import { StreamResponse } from "https://deno.land/x/stream_response@v0.1.0-pre.4/index.ts";
 
 export abstract class APIProxy {
-  apiKey: string;
+  apiKey?: string;
+  model?: string;
 
-  constructor(apiKey?: string) {
-    this.apiKey = apiKey || ''
+  constructor(options: { apiKey?: string, model?: string }) {
+    this.apiKey = options.apiKey
+    this.model = options.model
   }
 
   abstract getClient()
@@ -12,6 +14,14 @@ export abstract class APIProxy {
   abstract getCompletionStream(apiRequest)
 
   abstract getCompletion(apiRequest)
+
+  get customRequestOptions() {
+    const options = {}
+    if (this.model) {
+      options.model = this.model
+    }
+    return options
+  }
 }
 
 export class ToolCallingProxy {
@@ -35,6 +45,8 @@ export class ToolCallingProxy {
       this.proxy.apiKey = apiKey;
     }
     const body = await request.json();
+
+    console.log({ request, body })
   
     if (!body.messages || !Array.isArray(body.messages)) {
       return new Response("Invalid request body", { status: 400 });
@@ -47,7 +59,7 @@ export class ToolCallingProxy {
           "Cache-Control": "no-cache",
           "Connection": "keep-alive",
         },
-      });
+      })
     }
     else {
       const message = await this.proxy.getCompletion(body);
