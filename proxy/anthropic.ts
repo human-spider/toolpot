@@ -30,11 +30,11 @@ export default class AnthropicProxy extends APIProxy {
 }
 
 async function* apiCallStream(anthropic, apiRequest) {
-  console.log({
-    ...apiRequest,
-    tools: toolSchema,
-    messages: removeAnnouncementsFromMessages(apiRequest.messages),
-  })
+  // console.log({
+  //   ...apiRequest,
+  //   tools: toolSchema,
+  //   messages: removeAnnouncementsFromMessages(apiRequest.messages),
+  // })
   const stream = await anthropic.messages.stream({
     ...apiRequest,
     tools: toolSchema,
