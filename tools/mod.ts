@@ -15,7 +15,13 @@ const toolFiles = [
   './execute-code.ts'
 ]
 
-const getJSDoc = file => doc(`file://${Deno.cwd()}/${dir}/${file}`)
+const importedFuncs = {
+  './web.ts': await import('./web.ts'),
+  './codesandbox.ts': await import('./codesandbox.ts'),
+  './execute-code.ts': await import('./execute-code.ts')
+}
+
+const getJSDoc = file => doc(`file://${dir}/${file}`)
 
 function getModuleDir(importMeta: ImportMeta): string {
   return path.resolve(path.dirname(path.fromFileUrl(importMeta.url)));
@@ -74,7 +80,7 @@ export async function getTools(shape = 'openai') {
 async function getFunctions() {
   const functions = {}
   for (const file of toolFiles) {
-    const funcs = await import(file)
+    const funcs = importedFuncs[file]
     for (const [name, func] of Object.entries(funcs)) {
       func.parameters = getParameterNames(func)
       functions[snakeCase(name)] = func
@@ -83,7 +89,7 @@ async function getFunctions() {
   return functions
 }
 
-async function getSchema(shape = 'openai') {
+export async function getSchema(shape = 'openai') {
   return (await Promise.all(toolFiles.map(file => parseJSDoc(file, shape)))).flat()
 }
 
