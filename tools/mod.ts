@@ -15,7 +15,7 @@ const toolFiles = [
   './execute-code.ts'
 ]
 
-const getJSDoc = file => doc(`file://${dir}/${file}`)
+const getJSDoc = file => doc(`file://${Deno.cwd()}/${dir}/${file}`)
 
 function getModuleDir(importMeta: ImportMeta): string {
   return path.resolve(path.dirname(path.fromFileUrl(importMeta.url)));
