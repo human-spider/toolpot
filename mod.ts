@@ -17,8 +17,8 @@ function attachHandlers(handlers: { [path: string]: ToolCallingProxy }) {
 }
 
 const flags = parseArgs(Deno.args, {
-  string: ['hostname', 'port', 'cert', 'key', 'model'],
-  default: { hostname: '0.0.0.0', port: '8000', https: false },
+  string: ['hostname', 'port', 'model'],
+  default: { hostname: '0.0.0.0', port: '8000' },
 })
 
 const serveOptions = {
@@ -26,14 +26,7 @@ const serveOptions = {
   port: Number(flags.port),
 }
 
-if (flags.cert && flags.key) {
-  serveOptions.cert = flags.cert
-  serveOptions.key = flags.key
-}
-
-const protocol = serveOptions.cert ? 'https' : 'http'
-
-const customModels = {}
+const customModels: Partial<Record<'openai' | 'anthropic', unknown>> = {}
 
 if (flags.model) {
   const modelTuple = flags.model.split(':')
@@ -49,7 +42,7 @@ if (flags.model) {
   }
 }
 
-console.log(`Server running on ${protocol}://${flags.hostname}:${flags.port}`)
+console.log(`Server running on http://${flags.hostname}:${flags.port}`)
 
 await Deno.serve(serveOptions, attachHandlers({
   '/v1/chat/completions': new ToolCallingProxy(new OpenAIProxy({

@@ -27,7 +27,7 @@ export abstract class APIProxy {
 export class ToolCallingProxy {
   proxy: APIProxy
 
-  constructor(proxy: APIProxy) {  
+  constructor(proxy: APIProxy) {
     this.proxy = proxy
   }
 
@@ -45,8 +45,6 @@ export class ToolCallingProxy {
       this.proxy.apiKey = apiKey;
     }
     const body = await request.json();
-
-    console.log({ request, body })
   
     if (!body.messages || !Array.isArray(body.messages)) {
       return new Response("Invalid request body", { status: 400 });
