@@ -3,8 +3,21 @@ import { ToolCallingProxy } from "./proxy/mod.ts"
 import OpenAIProxy from './proxy/openai.ts'
 import AnthropicProxy from './proxy/anthropic.ts'
 
+const API_KEYS = Deno.env.get('API_KEYS')?.split(',') ?? []
+
 function attachHandlers(handlers: { [path: string]: ToolCallingProxy }) {
   return (request: Request) => {
+    const apiKey = request.headers.get('x-api-key')
+    if (!apiKey) {
+      return new Response(JSON.stringify({
+        error: 'Missing x-api-key header',
+      }), { status: 400 })
+    }
+    if (!API_KEYS.includes(apiKey)) {
+      return new Response(JSON.stringify({
+        error: 'Invalid API key',
+      }), { status: 403 })
+    }
     const parsedUrl = new URL(request.url)
     const handler = handlers[parsedUrl.pathname]
     if (handler) {
