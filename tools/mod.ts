@@ -53,7 +53,6 @@ export async function getTools(shape = 'openai') {
     getFunctions(),
     getDumpedSchema(shape)
   ])
-  console.log(tools, toolSchema)
   if (shape === 'openai') {
     for (const schema of toolSchema) {
       const tool = tools[schema.function.name]

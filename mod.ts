@@ -58,9 +58,9 @@ if (flags.model) {
 console.log(`Server running on http://${flags.hostname}:${flags.port}`)
 
 await Deno.serve(serveOptions, attachHandlers({
-  '/v1/chat/completions': new ToolCallingProxy(new OpenAIProxy({
-    model: customModels.openai
-  })),
+  // '/v1/chat/completions': new ToolCallingProxy(new OpenAIProxy({
+  //   model: customModels.openai
+  // })),
   '/v1/messages': new ToolCallingProxy(new AnthropicProxy({
     model: customModels.anthropic
   })),
