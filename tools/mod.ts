@@ -51,8 +51,9 @@ export const removeAnnouncementsFromMessages = messages =>
 export async function getTools(shape = 'openai') {
   const [ tools, toolSchema ] = await Promise.all([
     getFunctions(),
-    getSchema(shape)
+    getDumpedSchema(shape)
   ])
+  console.log(tools, toolSchema)
   if (shape === 'openai') {
     for (const schema of toolSchema) {
       const tool = tools[schema.function.name]
@@ -91,6 +92,10 @@ async function getFunctions() {
 
 export async function getSchema(shape = 'openai') {
   return (await Promise.all(toolFiles.map(file => parseJSDoc(file, shape)))).flat()
+}
+
+async function getDumpedSchema(shape = 'openai') {
+  return JSON.parse(await Deno.readTextFile(`${Deno.cwd()}/schema/${shape}.json`))
 }
 
 function getParameterNames(func) {

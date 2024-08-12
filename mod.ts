@@ -7,7 +7,7 @@ const API_KEYS = Deno.env.get('API_KEYS')?.split(',') ?? []
 
 function attachHandlers(handlers: { [path: string]: ToolCallingProxy }) {
   return (request: Request) => {
-    const apiKey = request.headers.get('x-api-key')
+    const apiKey = request.headers.get('x-api-key') || request.headers.get('api-key')
     if (!apiKey) {
       return new Response(JSON.stringify({
         error: 'Missing x-api-key header',

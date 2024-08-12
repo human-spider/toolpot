@@ -1,0 +1,85 @@
+[
+  {
+    "name": "search_google",
+    "description": "Takes in a query string and returns search results from Google in the form of links and optional summary..\nUse it to answer user questions that require dates, facts, real-time information, or news.\nLinks in the search results can be opened using the get_web_page function. Select 1-3 links from the\nsearch results to get detailed information about the topic, do not rely only on link previews.\n",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "The query string to search for."
+        }
+      },
+      "required": [
+        "query"
+      ]
+    }
+  },
+  {
+    "name": "get_web_page_content",
+    "description": "Fetches content from a specified webpage URL and converts it to Markdown format.\nUse ot to get detailed information from links in the google search results, fetch up to date\ninformation from websites, and summarize website contents. \n",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "The URL to scrape."
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "run_js_code_in_sandbox",
+    "description": "Runs JavaScript code for data analysis and visualization\nby creating a CodeSandbox environment and returning an \nembedded HTML iframe to display the results to the user.\nUse this function only when the user asks to perform calculations, process data structures\nsuch as json, csv, or arrays, or visualize data using libraries like chart.js, requesting\na specific result beyond generating JS code.\nPrefer easy solutions requiring least amount of code.  If asked to fetch and process or visualize\ndata from a URL, use the fetch function inside JS code to retrieve the data.\nDo not forget to import dependencies from NPM in the jsCode as if it was a standalone file.\n",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "jsCode": {
+          "type": "string",
+          "description": "The JavaScript code to run to perform analysis."
+        },
+        "htmlCode": {
+          "type": "string",
+          "description": "The HTML code to be used to output results to the user."
+        },
+        "dependencies": {
+          "type": "object",
+          "description": "An object containing the NPM dependencies required for the JS code like in package.json dependencies object. Example: { \"d3\": \"^7.8.5\" }"
+        }
+      },
+      "required": [
+        "jsCode",
+        "htmlCode",
+        "dependencies"
+      ]
+    }
+  },
+  {
+    "name": "execute_code",
+    "description": "Executes code in several languages using the OneCompiler API and returns the result that code outputs to stdout.\nUse this function to perform precise calculations and transform data to use in your answers.\nUse this function when user asks to calculate something, process data or text, and for any tasks\nthat require precise result, e.g. calculating amount of words in a sentence, or amount of days to the new year.\n",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "files": {
+          "type": "array",
+          "description": "An array of file objects containing the name and content of each file to be executed. Each file is an object that must have `name` and `content` fields."
+        },
+        "language": {
+          "type": "string",
+          "description": "The programming language of the code to be executed. Must be one of 'javascript', 'nodejs', 'python', 'ruby', 'r'"
+        },
+        "stdin": {
+          "type": "string",
+          "description": "Optional input to be passed to the program during execution as stdin"
+        }
+      },
+      "required": [
+        "files",
+        "language"
+      ]
+    }
+  }
+]
