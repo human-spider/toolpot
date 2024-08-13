@@ -31,7 +31,7 @@ export default class AnthropicProxy extends APIProxy {
   }
 }
 
-async function* apiCallStream(anthropic, apiRequest) {
+async function* apiCallStream(anthropic, apiRequest, wrapped = false) {
   // console.log({
   //   ...apiRequest,
   //   tools: toolSchema,
@@ -48,10 +48,10 @@ async function* apiCallStream(anthropic, apiRequest) {
   })
   stream.on('error', console.error)
   for await (const chunk of stream) {
-    yield dataChunk(chunk);
     if (chunk.type === 'message_stop' && isToolUseRequested(blocks)) {
-      await sleep(500)
       yield* useTool(anthropic, apiRequest, blocks);
+    } else if (chunk.type !== 'message_start' || !wrapped) {
+      yield dataChunk(chunk);
     }
   }
 }
@@ -118,7 +118,8 @@ async function* useTool(anthropic, apiRequest, blocks) {
     // }
     yield* apiCallStream(
       anthropic,
-      toolResultApiRequest(apiRequest, blocks, toolBlock.id, toolResult)
+      toolResultApiRequest(apiRequest, blocks, toolBlock.id, toolResult),
+      true
     )
   }
 }
