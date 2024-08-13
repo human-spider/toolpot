@@ -4,8 +4,8 @@ import type { DocNode } from "https://deno.land/x/deno_doc@0.125.0/types.d.ts";
 import { snakeCase } from "https://deno.land/x/case/mod.ts";
 
 const ANNOUNCEMENT_PARTS = [
-  '<span class="tool_announcement">',
-  '</span><span class="tool_announcement_end"></span>',
+  '<tg-spoiler>',
+  '</tg-spoiler>',
 ]
 const ANNOUNCEMENT_REGEX = new RegExp(`${ANNOUNCEMENT_PARTS[0]}(.*?)${ANNOUNCEMENT_PARTS[1]}`, 'gs');
 
