@@ -70,4 +70,4 @@ export class ToolCallingProxy {
   }
 }
 
-export const dataChunk = chunk => `data: ${JSON.stringify(chunk)}\n\n`;
+export const dataChunk = chunk => `event: ${chunk.type}\ndata: ${JSON.stringify(chunk)}\n\n`;
