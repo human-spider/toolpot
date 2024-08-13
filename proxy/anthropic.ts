@@ -108,13 +108,13 @@ async function* useTool(anthropic, apiRequest, blocks) {
     const args = tool.parameters.map(
       key => toolBlock.input[key]
     )
-    if (tool.announce) {
-      yield* announceToolUse(tool.announce?.(...args), blocks.length)
-    }
+    // if (tool.announce) {
+    //   yield* announceToolUse(tool.announce?.(...args), blocks.length)
+    // }
     const toolResult = await tool(...args)
-    if (tool.present) {
-      yield* announceToolUse(tool.present?.(toolResult, ...args), blocks.length + 1)
-    }
+    // if (tool.present) {
+    //   yield* announceToolUse(tool.present?.(toolResult, ...args), blocks.length + 1)
+    // }
     yield* apiCallStream(
       anthropic,
       toolResultApiRequest(apiRequest, blocks, toolBlock.id, toolResult)
