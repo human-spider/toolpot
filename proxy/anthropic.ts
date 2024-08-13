@@ -40,7 +40,7 @@ async function* apiCallStream(anthropic, apiRequest, wrapped = false) {
   const stream = await anthropic.messages.stream({
     ...apiRequest,
     tools: toolSchema,
-    messages: removeAnnouncementsFromMessages(apiRequest.messages),
+    messages: apiRequest.messages,
   });
   let blocks = [];
   stream.on('contentBlock', block => {
