@@ -47,6 +47,7 @@ async function* apiCallStream(anthropic, apiRequest) {
   stream.on('error', console.error)
   for await (const chunk of stream) {
     if (chunk.type === 'message_stop' && isToolUseRequested(blocks)) {
+      yield dataChunk(chunk);
       yield* useTool(anthropic, apiRequest, blocks);
     } else {
       yield dataChunk(chunk);
