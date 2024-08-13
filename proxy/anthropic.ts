@@ -5,6 +5,8 @@ import { getTools, formatAnnouncement, removeAnnouncementsFromMessages } from ".
 
 const { tools, toolSchema } = await getTools('anthropic')
 
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
 export default class AnthropicProxy extends APIProxy {
   anthropic: Anthropic;
 
@@ -48,6 +50,7 @@ async function* apiCallStream(anthropic, apiRequest) {
   for await (const chunk of stream) {
     if (chunk.type === 'message_stop' && isToolUseRequested(blocks)) {
       yield dataChunk(chunk);
+      await sleep(200)
       yield* useTool(anthropic, apiRequest, blocks);
     } else {
       yield dataChunk(chunk);
