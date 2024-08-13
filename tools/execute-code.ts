@@ -26,11 +26,9 @@ export async function executeCode(files: Array<{ name: string; content: string }
     return `Error executing code: ${e}`
   }
 }
-executeCode.announce = (files, language) => `<blockquote><details>
-  <summary>Executing ${language} code...</summary>
-  ${files.map(file => `<pre class="hljs"><code class="language-${language}">${file.content}</code></pre>`).join('\n')}
-</details></blockquote>`
-executeCode.present = (result, _, language) => `<blockquote><details>
-  <summary>See result</summary>
-  <pre class="hljs"><code class="language-${language}">${result}</code></pre>
-</details></blockquote>`
+executeCode.announce = (files, language) => `Executing ${language} code...
+  ${files.map(file => `<pre><code class="language-${language}">${file.content}</code></pre>`).join('\n')}
+`
+executeCode.present = (result, _, language) => `Output:
+  <pre><code class="language-${language}">${result}</code></pre>
+`

@@ -13,7 +13,7 @@ import { scrapeWebsite } from "../lib/scrape.ts"
 export function searchGoogle(query: string) {
   return googleResults(query)
 }
-searchGoogle.announce = query => `<blockquote>Searching Google: [${query}](https://google.com/search?q=${encodeURIComponent(query)})</blockquote>`
+searchGoogle.announce = query => `Searching Google: https://google.com/search?q=${encodeURIComponent(query)}`
 
 /**
  * Fetches content from a specified webpage URL and converts it to Markdown format.
@@ -26,4 +26,4 @@ searchGoogle.announce = query => `<blockquote>Searching Google: [${query}](https
 export function getWebPageContent(url: string) {
   return scrapeWebsite(url)
 }
-getWebPageContent.announce = url => `<blockquote>Visiting [${url}](${url})</blockquote>`
+getWebPageContent.announce = url => `Visiting ${url}`

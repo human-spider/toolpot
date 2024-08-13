@@ -11,13 +11,13 @@ const ANNOUNCEMENT_REGEX = new RegExp(`${ANNOUNCEMENT_PARTS[0]}(.*?)${ANNOUNCEME
 
 const toolFiles = [
   './web.ts',
-  './codesandbox.ts',
+  // './codesandbox.ts',
   './execute-code.ts'
 ]
 
 const importedFuncs = {
   './web.ts': await import('./web.ts'),
-  './codesandbox.ts': await import('./codesandbox.ts'),
+  // './codesandbox.ts': await import('./codesandbox.ts'),
   './execute-code.ts': await import('./execute-code.ts')
 }
 
