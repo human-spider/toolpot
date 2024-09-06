@@ -8,6 +8,7 @@ import { tool } from "npm:ai";
 
 import { googleResults } from "../lib/google.ts"
 
+const API_KEYS = Deno.env.get('API_KEYS')?.split(',') ?? []
 
 const PROVIDERS = { openai, anthropic }
 
@@ -76,11 +77,23 @@ export const handleRequest = async (request: Request): Promise<Response> => {
     return new Response("Method Not Allowed", { status: 405 });
   }
 
+  const apiKey = request.headers.get('x-api-key') || request.headers.get('api-key')
+  if (!apiKey) {
+    return new Response(JSON.stringify({
+      error: 'Missing x-api-key header',
+    }), { status: 400 })
+  }
+  if (!API_KEYS.includes(apiKey)) {
+    return new Response(JSON.stringify({
+      error: 'Invalid API key',
+    }), { status: 403 })
+  }
+
   if (request.headers.get("Content-Type") !== "application/json") {
     return new Response("Unsupported Media Type", { status: 415 });
   }
 
-  const { messages, stream, model, ...rest } = await request.json() as { messages: CoreMessage[], model: string, stream: boolean };
+  const { messages, stream, model } = await request.json() as { messages: CoreMessage[], model: string, stream: boolean };
 
   // console.log(messages, rest)
 
