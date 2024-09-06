@@ -1,33 +1,5 @@
 import { parseArgs } from "jsr:@std/cli/parse-args"
-import { ToolCallingProxy } from "./proxy/mod.ts"
-import OpenAIProxy from './proxy/openai.ts'
-import AnthropicProxy from './proxy/anthropic.ts'
-
-const API_KEYS = Deno.env.get('API_KEYS')?.split(',') ?? []
-
-function attachHandlers(handlers: { [path: string]: ToolCallingProxy }) {
-  return (request: Request) => {
-    const apiKey = request.headers.get('x-api-key') || request.headers.get('api-key')
-    if (!apiKey) {
-      return new Response(JSON.stringify({
-        error: 'Missing x-api-key header',
-      }), { status: 400 })
-    }
-    if (!API_KEYS.includes(apiKey)) {
-      return new Response(JSON.stringify({
-        error: 'Invalid API key',
-      }), { status: 403 })
-    }
-    const parsedUrl = new URL(request.url)
-    const handler = handlers[parsedUrl.pathname]
-    if (handler) {
-      return handler.handleRequest(request)
-    }
-    return new Response(JSON.stringify({
-      error: `No handler for path: ${request.url}`,
-    }), { status: 400 })
-  }
-}
+import { handleRequest } from "./proxy/mod.ts";
 
 const flags = parseArgs(Deno.args, {
   string: ['hostname', 'port', 'model'],
@@ -57,11 +29,4 @@ if (flags.model) {
 
 console.log(`Server running on http://${flags.hostname}:${flags.port}`)
 
-await Deno.serve(serveOptions, attachHandlers({
-  // '/v1/chat/completions': new ToolCallingProxy(new OpenAIProxy({
-  //   model: customModels.openai
-  // })),
-  '/v1/messages': new ToolCallingProxy(new AnthropicProxy({
-    model: customModels.anthropic
-  })),
-}));
+await Deno.serve(serveOptions, handleRequest);

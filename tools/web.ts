@@ -8,7 +8,7 @@ import { scrapeWebsite } from "../lib/scrape.ts"
  * search results to get detailed information about the topic, do not rely only on link previews.
  * 
  * @param {string} query The query string to search for.
- * @returns {Promise<String>}
+ * @returns {Promise<string>}
  */
 export function searchGoogle(query: string) {
   return googleResults(query)
