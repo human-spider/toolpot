@@ -3,7 +3,7 @@ import { z } from "https://deno.land/x/zod/mod.ts";
 
 import { openai } from 'npm:@ai-sdk/openai'
 import { anthropic } from 'npm:@ai-sdk/anthropic'
-import { streamText, generateText, type CoreMessage, type JSONValue } from 'npm:ai'
+import { streamText, generateText, type CoreMessage, type JSONValue, CoreTool, TextStreamPart } from 'npm:ai'
 import { tool } from "npm:ai";
 
 import { googleResults } from "../lib/google.ts"
@@ -16,7 +16,7 @@ const dataChunk = (chunk: JSONValue) => `data: ${JSON.stringify(chunk)}\n\n`
 const eventChunk = (event: string, chunk: JSONValue) => `event: ${event}\ndata: ${JSON.stringify(chunk)}\n\n`
 
 
-async function* openAICompatibleResponseStream(stream: AsyncIterable<unknown>, model: string): AsyncGenerator<string> {
+async function* openAICompatibleResponseStream<TOOLS extends Record<string, CoreTool>>(stream: AsyncIterable<TextStreamPart<TOOLS>>, model: string): AsyncGenerator<string> {
   yield dataChunk({
     object: 'chat.completion.chunk',
     created: Date.now(),
@@ -77,6 +77,7 @@ export const handleRequest = async (request: Request): Promise<Response> => {
     return new Response("Method Not Allowed", { status: 405 });
   }
 
+  console.log(request.headers.entries())
   const apiKey = request.headers.get('x-api-key') || request.headers.get('api-key')
   if (!apiKey) {
     return new Response(JSON.stringify({
@@ -115,18 +116,20 @@ export const handleRequest = async (request: Request): Promise<Response> => {
     return new Response("Invalid request body", { status: 400 });
   }
 
+  const tools = {
+    google: tool({
+      description: "Takes in a query string and returns search results from Google in the form of links and optional summary..\nUse it to answer user questions that require dates, facts, real-time information, or news.\nLinks in the search results can be opened using the get_web_page function. Select 1-3 links from the\nsearch results to get detailed information about the topic, do not rely only on link previews.\n",
+      parameters: z.object({
+        query: z.string().describe('The query string to search for.')
+      }),
+      execute: ({ query }) => googleResults(query),
+    })
+  }
+
   const params = {
     messages,
     model: PROVIDERS[provider](modelName),
-    tools: {
-      google: tool({
-        description: "Takes in a query string and returns search results from Google in the form of links and optional summary..\nUse it to answer user questions that require dates, facts, real-time information, or news.\nLinks in the search results can be opened using the get_web_page function. Select 1-3 links from the\nsearch results to get detailed information about the topic, do not rely only on link previews.\n",
-        parameters: z.object({
-          query: z.string().describe('The query string to search for.')
-        }),
-        execute: ({ query }) => googleResults(query),
-      })
-    },
+    tools,
     maxToolRoundtrips: 5,
   }
 
@@ -153,7 +156,7 @@ export const handleRequest = async (request: Request): Promise<Response> => {
     )
   }
   else {
-    const { text, usage, finishReason } = await generateText(params)
+    const { text, usage, finishReason, toolCalls, toolResults } = await generateText(params)
     return new Response(JSON.stringify({
       object: 'chat.completion',
       created: Math.floor(Date.now() / 1000),
