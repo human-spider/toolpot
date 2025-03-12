@@ -1,4 +1,8 @@
 {
+  "name": "@ainc/toolpot",
+  "version": "0.1.0",
+  "license": "MIT",
+  "exports": "./mod.ts",
   "imports": {
     "@ai-sdk/anthropic": "npm:@ai-sdk/anthropic@^1.1.9",
     "@ai-sdk/google": "npm:@ai-sdk/google@^1.1.16",
