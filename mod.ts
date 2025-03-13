@@ -12,7 +12,7 @@ export type ToolpotProviderConfig = {
 }
 
 export type ToolpotMcpServerConfig = {
-  sseUrl: 'string'
+  sseUrl: string
 }
 
 export type ToolpotAgentConfig = {
@@ -46,6 +46,10 @@ export const toolpot = (config: ToolpotConfig): void => {
     generatedApiKey = crypto.randomUUID()
     apiKeys.push(generatedApiKey)
   }
+
+  app.get('/', (_: Request, res: Response) => {
+    res.send('OK')
+  })
 
   app.post('/v1/chat/completions', async (req: Request, res: Response) => {
     const authorization = req.get('authorization')
