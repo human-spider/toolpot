@@ -2,6 +2,12 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js"
 import { jsonSchema, type Tool, type ToolSet } from "ai"
 
+type ToolManifest = {
+  name: string
+  description: string
+  inputSchema: Record<string, unknown>
+}
+
 export class McpSseConnection {
   private transport: SSEClientTransport
   private client: Client
@@ -30,7 +36,7 @@ export class McpSseConnection {
     }
     const { tools } = await this.client.listTools()
 
-    return tools.reduce((acc: ToolSet, { name, description, inputSchema }): ToolSet => ({
+    return tools.reduce((acc: ToolSet, { name, description, inputSchema }: ToolManifest): ToolSet => ({
       ...acc,
       [name]: {
         name,

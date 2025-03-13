@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import type { ToolpotConfig } from "./mod.ts"
+import type { ToolpotConfig, ToolpotSupportedProvider } from "./mod.ts"
 
 import { createOpenAI } from '@ai-sdk/openai'
 import { createAnthropic } from '@ai-sdk/anthropic'
@@ -26,14 +26,14 @@ export const handleRequest = async (req: Request, res: Response, config: Toolpot
 
   const agentConfig = config.agents[model]
   const providerConfig = config.providers[agentConfig?.provider]
-  if (!agentConfig || !providerConfig) {
+  if (!agentConfig || !providerConfig || !Object.keys(providerFactories).includes(providerConfig.provider)) {
     res.status(400).json({ error: "Invalid request body" });
     return;
   }
 
   const mcpSseUrl = agentConfig.mcpSse && config.mcpServers?.[agentConfig.mcpSse]?.sseUrl
 
-  const aiSdkModel = providerFactories[providerConfig.provider]({
+  const aiSdkModel = providerFactories[providerConfig.provider as ToolpotSupportedProvider]({
     apiKey: providerConfig.apiKey
   })(agentConfig.model, agentConfig.modelArgs)
 

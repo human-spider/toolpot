@@ -2,33 +2,36 @@ import express from 'express'
 import type { Request, Response } from 'express'
 
 import cors from 'cors'
-import { z } from "@nhttp/zod"
 import { handleRequest } from "./proxy.ts";
 
-const toolpotConfigSchema = z.object({
-  apiKeys: z.array(z.string()).optional(),
-  hostname: z.string().optional(),
-  port: z.number().optional(),
-  providers: z.record(z.object({
-    provider: z.enum(['google', 'openai', 'anthropic']),
-    apiKey: z.string(),
-  })),
-  mcpServers: z.record(z.object({
-    sseUrl: z.string()
-  })).optional(),
-  agents: z.record(z.object({
-    provider: z.string(),
-    model: z.string(),
-    mcpSse: z.string().optional(),
-    modelArgs: z.record(z.unknown()).optional(),
-  }))
-})
+export type ToolpotSupportedProvider = 'google' | 'openai' | 'anthropic'
 
-export type ToolpotConfig = z.infer<typeof toolpotConfigSchema>
+export type ToolpotProviderConfig = {
+  provider: ToolpotSupportedProvider
+  apiKey: string
+}
+
+export type ToolpotMcpServerConfig = {
+  sseUrl: 'string'
+}
+
+export type ToolpotAgentConfig = {
+  provider: string,
+  model: string,
+  mcpSse?: string
+  modelArgs?: Record<string, unknown>
+}
+
+export type ToolpotConfig = {
+  apiKeys?: string[]
+  hostname?: string
+  port?: number
+  providers: Record<string, ToolpotProviderConfig>
+  mcpServers: Record<string, ToolpotMcpServerConfig>
+  agents: Record<string, ToolpotAgentConfig>
+}
 
 export const toolpot = (config: ToolpotConfig): void => {
-  toolpotConfigSchema.parse(config)
-
   const app = express()
   app.use(cors())
   app.use(express.json())
