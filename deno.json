@@ -1,17 +1,14 @@
 {
   "name": "@ainc/toolpot",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "license": "MIT",
   "exports": "./mod.ts",
   "imports": {
     "@ai-sdk/anthropic": "npm:@ai-sdk/anthropic@^1.1.9",
     "@ai-sdk/google": "npm:@ai-sdk/google@^1.1.16",
     "@ai-sdk/openai": "npm:@ai-sdk/openai@^1.1.13",
-    "@felix/argon2": "jsr:@felix/argon2@^2.0.2",
     "@modelcontextprotocol/sdk": "npm:@modelcontextprotocol/sdk@^1.5.0",
     "@nhttp/zod": "jsr:@nhttp/zod@^2.0.2",
-    "@oak/oak": "jsr:@oak/oak@^17.1.3",
-    "@smithery/sdk": "npm:@smithery/sdk@^1.0.1",
     "@std/cli": "jsr:@std/cli@^1.0.9",
     "ai": "npm:ai@^4.1.45",
     "cors": "npm:cors@^2.8.5",
