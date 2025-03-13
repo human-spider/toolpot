@@ -20,6 +20,7 @@ export type ToolpotAgentConfig = {
   model: string,
   mcpSse?: string
   modelArgs?: Record<string, unknown>
+  label?: string
 }
 
 export type ToolpotConfig = {
@@ -74,7 +75,7 @@ export const toolpot = (config: ToolpotConfig): void => {
 
   app.get('/v1/models', (_: Request, res: Response) => {
     res.json({
-      data: Object.keys(config.agents).map(id => ({ id, object: 'model' })),
+      data: Object.keys(config.agents).map(id => ({ id, object: 'model', label: config.agents[id].label })),
       object: 'list',
     })
   })
