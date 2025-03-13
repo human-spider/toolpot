@@ -4,7 +4,7 @@ import { jsonSchema, type Tool, type ToolSet } from "ai"
 
 type ToolManifest = {
   name: string
-  description: string
+  description?: string
   inputSchema: Record<string, unknown>
 }
 
