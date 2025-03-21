@@ -44,7 +44,7 @@ export class Toolpot {
   private mcpConnections: Record<string, McpConnection> = {}
 
   constructor(private config: ToolpotConfig) {
-    if (this.config.mcpServers?.length) {
+    if (this.config.mcpServers) {
       for (const [name, config] of Object.entries(this.config.mcpServers)) {
         this.mcpConnections[name] = new McpConnection(config)
       }
