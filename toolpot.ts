@@ -51,15 +51,15 @@ export class Toolpot {
     }
   }
 
-  get agents() {
+  get agents(): Record<string, ToolpotAgentConfig> {
     return this.config.agents
   }
 
-  get mcpServers() {
+  get mcpServers(): Record<string, ToolpotMcpServerConfig> | undefined {
     return this.config.mcpServers
   }
 
-  get providers() {
+  get providers(): Record<string, ToolpotProviderConfig> {
     return this.config.providers
   }
 
@@ -89,7 +89,7 @@ export class Toolpot {
     return provider.languageModel(modelId, modelArgs)
   }
 
-  getAgent(agentId: string) {
+  getAgent(agentId: string): ToolpotAgentConfig {
     const agent = this.agents[agentId]
     if (!agent) {
       throw new Error(`Agent '${agentId}' not found`)
@@ -97,7 +97,7 @@ export class Toolpot {
     return agent
   }
 
-  getMcpConnection(mcpServerId: string) {
+  getMcpConnection(mcpServerId: string): McpConnection {
     const mcpConnection = this.mcpConnections[mcpServerId]
     if (!mcpConnection) {
       throw new Error(`MCP connection '${mcpServerId}' not found`)
