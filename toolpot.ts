@@ -128,7 +128,7 @@ export class Toolpot {
     return generateText(await this.buildGenerationParams(agentId, params))
   }
 
-  async generateObject<T>(agentId: string, params: Partial<ObjectGenerationParams<T>>): Promise<GenerateObjectResult<T>> {
+  async generateObject<T>(agentId: string, params: ObjectGenerationParams<T>): Promise<GenerateObjectResult<T>> {
     return generateObject(await this.buildObjectGenerationParams(agentId, params))
   }
 
@@ -136,7 +136,7 @@ export class Toolpot {
     return streamText(await this.buildGenerationParams(agentId, params))
   }
 
-  async streamObject<T>(agentId: string, params: Partial<ObjectGenerationParams<T>>): Promise<StreamObjectResult<Partial<T>, T, never>> {
+  async streamObject<T>(agentId: string, params: ObjectGenerationParams<T>): Promise<StreamObjectResult<Partial<T>, T, never>> {
     return streamObject(await this.buildObjectGenerationParams(agentId, params))
   }
 
