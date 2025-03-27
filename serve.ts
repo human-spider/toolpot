@@ -1,10 +1,11 @@
 import type { Request, Response } from 'express'
 import express from 'express'
 import cors from 'cors'
-import type { CoreMessage } from "ai"
+import { generateText, streamText, tool, type CoreMessage } from "ai"
 
 import { Toolpot, type ToolpotConfig } from "./toolpot.ts"
 import { openAICompatibleResponseStream } from "./stream.ts";
+import { getMessageParts } from "@ai-sdk/ui-utils";
 
 export type ToolpotServerConfig = {
   config: ToolpotConfig
@@ -39,8 +40,13 @@ const handleRequest = async (req: Request, res: Response, toolpot: Toolpot): Pro
     return;
   }
 
+  const generationParams = {
+    ...await toolpot.getAgentParams(model),
+    messages,
+  }
+
   if (stream) {
-    const { fullStream } = await toolpot.streamText(model, { messages })
+    const { fullStream } = await streamText(generationParams)
     res.set({
       'Content-Type': 'text/event-stream; charset=utf-8',
       'Cache-Control': 'no-cache',
@@ -51,7 +57,7 @@ const handleRequest = async (req: Request, res: Response, toolpot: Toolpot): Pro
       res.write(chunk)
     }
   } else {
-    const { text, usage, finishReason } = await toolpot.generateText(model, { messages })
+    const { text, usage, finishReason } = await generateText(generationParams)
 
     res.json({
       object: 'chat.completion',
