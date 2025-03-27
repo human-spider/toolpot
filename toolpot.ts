@@ -124,23 +124,23 @@ export class Toolpot {
     return toolSet
   }
 
-  async generateText(agentId: string, params: GenerationParams): Promise<GenerateTextResult<ToolSet, never>> {
+  async generateText(agentId: string, params: Partial<GenerationParams>): Promise<GenerateTextResult<ToolSet, never>> {
     return generateText(await this.buildGenerationParams(agentId, params))
   }
 
-  async generateObject<T>(agentId: string, params: ObjectGenerationParams<T>): Promise<GenerateObjectResult<T>> {
+  async generateObject<T>(agentId: string, params: Partial<ObjectGenerationParams<T>>): Promise<GenerateObjectResult<T>> {
     return generateObject(await this.buildObjectGenerationParams(agentId, params))
   }
 
-  async streamText(agentId: string, params: GenerationParams): Promise<StreamTextResult<ToolSet, never>> {
+  async streamText(agentId: string, params: Partial<GenerationParams>): Promise<StreamTextResult<ToolSet, never>> {
     return streamText(await this.buildGenerationParams(agentId, params))
   }
 
-  async streamObject<T>(agentId: string, params: ObjectGenerationParams<T>): Promise<StreamObjectResult<Partial<T>, T, never>> {
+  async streamObject<T>(agentId: string, params: Partial<ObjectGenerationParams<T>>): Promise<StreamObjectResult<Partial<T>, T, never>> {
     return streamObject(await this.buildObjectGenerationParams(agentId, params))
   }
 
-  private async buildGenerationParams<T extends GenerationParams>(agentId: string, params: T): Promise<T> {
+  private async buildGenerationParams<T extends GenerationParams>(agentId: string, params: Partial<T>): Promise<T> {
     const agent = this.getAgent(agentId)
     const tools = await this.getAgentToolSet(agentId)
     const model = this.getModel(agent.provider, agent.model, agent.modelArgs)
@@ -149,10 +149,10 @@ export class Toolpot {
       ...params,
       model,
       tools,
-    }
+    } as T
   }
 
-  private buildObjectGenerationParams<T>(agentId: string, params: ObjectGenerationParams<T>): Promise<ObjectGenerationParams<T>> {
+  private buildObjectGenerationParams<T>(agentId: string, params: Partial<ObjectGenerationParams<T>>): Promise<ObjectGenerationParams<T>> {
     return this.buildGenerationParams(agentId, params)
   }
 }
