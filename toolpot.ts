@@ -1,10 +1,12 @@
-import type { CoreMessage, GenerateTextResult, LanguageModelV1, StreamTextResult, ToolSet } from "ai"
-import { streamText, generateText } from 'ai'
+import type { CoreMessage, GenerateObjectResult, GenerateTextResult, LanguageModelV1, StreamObjectResult, StreamTextResult, ToolSet } from "ai"
+import type { Schema } from '@ai-sdk/ui-utils'
+import { streamText, generateText, generateObject, streamObject } from 'ai'
 import { createOpenAI, type OpenAIProvider } from '@ai-sdk/openai'
 import { createAnthropic, type AnthropicProvider } from '@ai-sdk/anthropic'
 import { createGoogleGenerativeAI, type GoogleGenerativeAIProvider } from '@ai-sdk/google'
 
 import { McpConnection, type ToolpotMcpServerConfig } from "./mcp.ts"
+import type { z } from "@nhttp/zod"
 
 export type ToolpotSupportedProvider = 'google' | 'openai' | 'anthropic'
 
@@ -29,14 +31,19 @@ export type ToolpotConfig = {
   mcpServers?: Record<string, ToolpotMcpServerConfig>
 }
 
-export type TextGenerationParams = {
-  messages: CoreMessage[]
+export type GenerationParams = {
+  system?: string,
+  messages?: CoreMessage[]
+  prompt?: string,
   model: LanguageModelV1
   tools?: ToolSet
   maxSteps?: number
 }
 
-export type TextGenerationInit = Partial<TextGenerationParams> & Required<Pick<TextGenerationParams, 'messages'>>
+export type ObjectGenerationParams<T> = GenerationParams & {
+  output: 'object',
+  schema: z.Schema<T, z.ZodTypeDef, unknown> | Schema<T>
+}
 
 const providerFactories = { openai: createOpenAI, anthropic: createAnthropic, google: createGoogleGenerativeAI }
 
@@ -63,7 +70,7 @@ export class Toolpot {
     return this.config.providers
   }
 
-  get defaultGenerationParams(): Partial<TextGenerationParams> {
+  get defaultGenerationParams(): Partial<GenerationParams> {
     return {
       maxSteps: 10
     }
@@ -117,15 +124,23 @@ export class Toolpot {
     return toolSet
   }
 
-  async generateText(agentId: string, params: TextGenerationInit): Promise<GenerateTextResult<ToolSet, never>> {
-    return generateText(await this.buildTextGenerationParams(agentId, params))
+  async generateText(agentId: string, params: GenerationParams): Promise<GenerateTextResult<ToolSet, never>> {
+    return generateText(await this.buildGenerationParams(agentId, params))
   }
 
-  async streamText(agentId: string, params: TextGenerationInit): Promise<StreamTextResult<ToolSet, never>> {
-    return streamText(await this.buildTextGenerationParams(agentId, params))
+  async generateObject<T>(agentId: string, params: ObjectGenerationParams<T>): Promise<GenerateObjectResult<T>> {
+    return generateObject(await this.buildObjectGenerationParams(agentId, params))
   }
 
-  private async buildTextGenerationParams(agentId: string, params: TextGenerationInit): Promise<TextGenerationParams> {
+  async streamText(agentId: string, params: GenerationParams): Promise<StreamTextResult<ToolSet, never>> {
+    return streamText(await this.buildGenerationParams(agentId, params))
+  }
+
+  async streamObject<T>(agentId: string, params: ObjectGenerationParams<T>): Promise<StreamObjectResult<Partial<T>, T, never>> {
+    return streamObject(await this.buildObjectGenerationParams(agentId, params))
+  }
+
+  private async buildGenerationParams<T extends GenerationParams>(agentId: string, params: T): Promise<T> {
     const agent = this.getAgent(agentId)
     const tools = await this.getAgentToolSet(agentId)
     const model = this.getModel(agent.provider, agent.model, agent.modelArgs)
@@ -135,5 +150,9 @@ export class Toolpot {
       model,
       tools,
     }
+  }
+
+  private buildObjectGenerationParams<T>(agentId: string, params: ObjectGenerationParams<T>): Promise<ObjectGenerationParams<T>> {
+    return this.buildGenerationParams(agentId, params)
   }
 }
