@@ -1,11 +1,10 @@
 import type { Request, Response } from 'express'
 import express from 'express'
 import cors from 'cors'
-import { generateText, streamText, tool, type CoreMessage } from "ai"
+import { generateText, streamText, type CoreMessage } from "ai"
 
 import { Toolpot, type ToolpotConfig } from "./toolpot.ts"
 import { openAICompatibleResponseStream } from "./stream.ts";
-import { getMessageParts } from "@ai-sdk/ui-utils";
 
 export type ToolpotServerConfig = {
   config: ToolpotConfig
@@ -43,6 +42,7 @@ const handleRequest = async (req: Request, res: Response, toolpot: Toolpot): Pro
   const generationParams = {
     ...await toolpot.getAgentParams(model),
     messages,
+    maxSteps: 20,
   }
 
   if (stream) {

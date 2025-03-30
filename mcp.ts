@@ -37,7 +37,8 @@ export class McpConnection {
       version: '0.1.0',
     }, {
       capabilities: {
-        tools: {}
+        tools: {},
+        prompts: {}
       }
     })
   }
