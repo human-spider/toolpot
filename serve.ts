@@ -42,7 +42,7 @@ const handleRequest = async (req: Request, res: Response, toolpot: Toolpot): Pro
   const generationParams = {
     ...await toolpot.getAgentParams(model),
     messages,
-    maxSteps: 20,
+    maxSteps: 50,
   }
 
   if (stream) {
