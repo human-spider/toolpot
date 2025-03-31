@@ -1,3 +1,5 @@
+export type SearchType = 'search' | 'images' | 'videos' | 'places' | 'maps' | 'reviews' | 'news' | 'shopping' | 'lens' | 'scholar' | 'patents' | 'autocomplete'
+
 export interface SearchParameters {
     q: string;
     num?: number;
@@ -5,7 +7,7 @@ export interface SearchParameters {
     hl?: string;
     autocorrect?: boolean;
     page?: number;
-    type?: string;
+    type?: SearchType
 }
 
 export interface KnowledgeGraph {
@@ -55,7 +57,7 @@ export interface SerperResponse {
     relatedSearches: RelatedSearch[];
 }
 
-const SERPER_API_URL = "https://google.serper.dev/search";
+const SERPER_API_URL = "https://google.serper.dev";
 const SCRAPE_API_URL = "https://scrape.serper.dev"; // Added scrape API URL
 const apiKeyErrorMsg = 'Serper API key is missing!';
 
@@ -80,7 +82,7 @@ export class SerperClient {
         };
 
         try {
-            const response = await fetch(SERPER_API_URL, requestOptions);
+            const response = await fetch(`${SERPER_API_URL}/${params.type || 'search'}`, requestOptions);
             if (!response.ok) {
                 const result = await response.json();
                 throw new Error(result.message || "Failed to fetch search results");
