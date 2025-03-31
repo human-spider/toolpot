@@ -1,3 +1,4 @@
+import { ToolpotPromptConfig } from './toolpot';
 import { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js"
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
@@ -72,6 +73,18 @@ export class McpConnection {
     }, {})
 
     return this.toolSet || {}
+  }
+
+  async getPrompts(): Promise<Record<string, ToolpotPromptConfig>> {
+    if (!this.connected) {
+      await this.connect()
+    }
+    const result: ToolpotPromptConfig = {}
+    const { prompts } = await this.client.listPrompts()
+    for (const prompt of prompts) {
+      result[prompt.name] = prompt
+    }
+    return result
   }
 
   async close() {
