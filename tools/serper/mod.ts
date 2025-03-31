@@ -20,18 +20,25 @@ export const serper = (config: {apiKey: string}): SerperTools => {
         Always use google search to answer questions about prices, market data, weather, laws, regulations, and news.
         Never use this function when user asks for data that is persistent and unlikely to change,
         like distances between cities, and laws of physics, unless user explicitly asks for this.
-        Links in the search results can be opened using the getWebPageContent function. Select 2-5 links from the
+        Links in the search results can be opened using the getWebPageContent function. Select at least 3-5 links from the
         search results to get detailed information about the topic, do not rely only on link previews.`,
       parameters: z.object({
         q: z.string().describe('The query string to search for.'),
         num: z.number().describe('The number of results to return.'),
         page: z.number().describe('The page number to return.').optional(),
+        gl: z.string().describe('The country code to search in.').optional(),
+        hl: z.string().describe('The language code to search in.').optional(),
+        type: z.enum(['search', 'images', 'videos', 'places', 'maps', 'reviews', 'news', 'shopping', 'lens', 'scholar', 'patents', 'autocomplete'])
+          .describe('The type of search to perform.').optional(),
       }),
-      execute: ({ q, num, page }) => {
+      execute: ({ q, num, page, gl, hl, type }) => {
         return serperClient.search({
           q,
           num,
-          page
+          page,
+          gl,
+          hl,
+          type,
         })
       },
     }),
