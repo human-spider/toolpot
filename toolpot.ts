@@ -22,10 +22,25 @@ export type ToolpotAgentConfig = {
   label?: string
 }
 
+export type ToolpotPromptArgumentConfig = {
+  name: string,
+  description?: string,
+  required?: boolean
+}
+
+export type ToolpotPromptArguments = Record<string, ToolpotPromptArgumentConfig>
+
+export type ToolpotPromptConfig<T extends ToolpotPromptArguments> = {
+  name: string,
+  description?: string
+  arguments?: T
+}
+
 export type ToolpotConfig = {
   providers: Record<string, ToolpotProviderConfig>
   agents: Record<string, ToolpotAgentConfig>
   mcpServers?: Record<string, ToolpotMcpServerConfig>
+  prompts?: Record<string, ToolpotPromptConfig
 }
 
 export type AiSdkAgentParams = {
@@ -56,6 +71,10 @@ export class Toolpot {
 
   get providers(): Record<string, ToolpotProviderConfig> {
     return this.config.providers
+  }
+
+  get prompts(): Record<string, ToolpotPromptConfig> | undefined {
+    return this.config.prompts
   }
 
   async getAgentParams(agentId: string): Promise<AiSdkAgentParams> {
@@ -114,5 +133,17 @@ export class Toolpot {
       }
     }
     return toolSet
+  }
+
+  getPrompts(): Promise<Record<string, ToolpotPromptConfig>> {
+    return Promise.resolve(this.config.prompts || {})
+  }
+
+  async getPrompt(promptId: string, parameters: Record<string, unknown>): Promise<string> {
+    const prompts = await this.getPrompts()
+    const prompt = prompts[promptId]
+    if (!prompt) {
+      throw new Error(`Prompt '${promptId}' was not found.`)
+    }
   }
 }
