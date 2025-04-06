@@ -1,6 +1,6 @@
 {
   "name": "@ainc/toolpot",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "license": "MIT",
   "exports": {
    ".": "./mod.ts",
@@ -11,6 +11,7 @@
     "@ai-sdk/google": "npm:@ai-sdk/google@^1.1.16",
     "@ai-sdk/openai": "npm:@ai-sdk/openai@^1.1.13",
     "@ai-sdk/ui-utils": "npm:@ai-sdk/ui-utils@^1.2.1",
+    "@deno-library/template": "jsr:@deno-library/template@^0.2.1",
     "@modelcontextprotocol/sdk": "npm:@modelcontextprotocol/sdk@^1.5.0",
     "@nhttp/zod": "jsr:@nhttp/zod@^2.0.2",
     "ai": "npm:ai@^4.1.45",

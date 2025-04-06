@@ -4,6 +4,7 @@ import { createAnthropic, type AnthropicProvider } from '@ai-sdk/anthropic'
 import { createGoogleGenerativeAI, type GoogleGenerativeAIProvider } from '@ai-sdk/google'
 
 import { McpConnection, type ToolpotMcpServerConfig } from "./mcp.ts"
+import Template from "@deno-library/template"
 
 export type ToolpotSupportedProvider = 'google' | 'openai' | 'anthropic'
 
@@ -20,6 +21,7 @@ export type ToolpotAgentConfig = {
   tools?: ToolSet
   modelArgs?: Record<string, unknown>
   label?: string
+  prompt?: string
 }
 
 export type ToolpotPromptArgumentConfig = {
@@ -28,27 +30,37 @@ export type ToolpotPromptArgumentConfig = {
   required?: boolean
 }
 
-export type ToolpotPromptArguments = Record<string, ToolpotPromptArgumentConfig>
+export type ToolpotPromptArguments<T extends ToolpotPromptArgumentConfig> = Record<keyof T, string>
 
-export type ToolpotPromptConfig<T extends ToolpotPromptArguments> = {
+export type ToolpotPromptConfig<T extends ToolpotPromptArgumentConfig = ToolpotPromptArgumentConfig> = {
   name: string,
-  description?: string
-  arguments?: T
-}
+  description?: string,
+  arguments?: T,
+} & (
+  | { template: string, builder?: never }
+  | { template?: never, builder: (args?: ToolpotPromptArguments<T>) => Promise<string> }
+)
 
 export type ToolpotConfig = {
   providers: Record<string, ToolpotProviderConfig>
   agents: Record<string, ToolpotAgentConfig>
   mcpServers?: Record<string, ToolpotMcpServerConfig>
-  prompts?: Record<string, ToolpotPromptConfig
+  prompts?: Record<string, ToolpotPromptConfig>
 }
 
 export type AiSdkAgentParams = {
+  system?: string
   model: LanguageModelV1
   tools?: ToolSet
 }
 
+export type GetAgentParamsOptions = {
+  promptArgs?: ToolpotPromptArguments<ToolpotPromptArgumentConfig>
+}
+
 const providerFactories = { openai: createOpenAI, anthropic: createAnthropic, google: createGoogleGenerativeAI }
+
+const template = new Template()
 
 export class Toolpot {
   private mcpConnections: Record<string, McpConnection> = {}
@@ -77,14 +89,36 @@ export class Toolpot {
     return this.config.prompts
   }
 
-  async getAgentParams(agentId: string): Promise<AiSdkAgentParams> {
+  async getAgentParams(agentId: string, options: GetAgentParamsOptions = {}): Promise<AiSdkAgentParams> {
     const agent = this.getAgentConfig(agentId)
     const tools = await this.getAgentToolSet(agentId)
     const model = this.getModel(agent.provider, agent.model, agent.modelArgs)
+    let system: string | undefined
+    if (agent.prompt) {
+      system = await this.buildPrompt(agent.prompt, options.promptArgs)
+    }
     return {
+      system,
       model,
       tools,
     }
+  }
+
+  buildPrompt<T extends ToolpotPromptArgumentConfig>(promptId: string, args?: ToolpotPromptArguments<T>): Promise<string> {
+    const promptConfig = this.prompts?.[promptId]
+    if (!promptConfig) {
+      throw new Error(`Prompt with id '${promptId}' does not exist`)
+    }
+    if (promptConfig.template) {
+      if (!args) {
+        return Promise.resolve(promptConfig.template)
+      }
+      return Promise.resolve(template.render(promptConfig.template, args))
+    }
+    if (promptConfig.builder) {
+      return promptConfig.builder(args)
+    }
+    throw new Error('Prompt config must specify `template` or `builder` properties')
   }
 
   private getProvider(providerId: string): AnthropicProvider | OpenAIProvider | GoogleGenerativeAIProvider {
@@ -133,17 +167,5 @@ export class Toolpot {
       }
     }
     return toolSet
-  }
-
-  getPrompts(): Promise<Record<string, ToolpotPromptConfig>> {
-    return Promise.resolve(this.config.prompts || {})
-  }
-
-  async getPrompt(promptId: string, parameters: Record<string, unknown>): Promise<string> {
-    const prompts = await this.getPrompts()
-    const prompt = prompts[promptId]
-    if (!prompt) {
-      throw new Error(`Prompt '${promptId}' was not found.`)
-    }
   }
 }
