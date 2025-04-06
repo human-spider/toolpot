@@ -36,6 +36,13 @@ export async function* openAICompatibleResponseStream<TOOLS extends Record<strin
           arguments: JSON.stringify(chunk.args)
         }
       })
+      yield dataChunk({
+        object: 'chat.completion.chunk',
+        choices: [{
+          index: 0,
+          delta: { content: "\n" },
+        }]
+      })
     }
     if (chunk.type === 'tool-result') {
       yield eventChunk('tool-result', {
